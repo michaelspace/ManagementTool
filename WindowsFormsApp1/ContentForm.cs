@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -69,6 +70,54 @@ namespace WindowsFormsApp1
                     db.SaveChanges();
                 }
             }
+        }
+
+        private void btnXML_Click(object sender, EventArgs e)
+        {
+            DataTable dt = getDataTableFromDataGridView(dataGridView);
+            DataSet ds = new DataSet() { DataSetName = "Employees" };
+            ds.Tables.Add(dt);
+
+            SaveFileDialog sfd = new SaveFileDialog() { Filter = "XML|*.xml" };
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    ds.WriteXml(sfd.FileName);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex);
+                }
+            }
+        }
+        private DataTable getDataTableFromDataGridView(DataGridView dgv)
+        {
+            var dt = new DataTable() { TableName = "Details" };
+            string[] columns = { "Id", "Name", "Surname", "Email", "PhoneNumber", "Position", "Address" };
+            int tmp = 0;
+
+            foreach (DataGridViewColumn column in dgv.Columns)
+            {
+                if (column.Visible)
+                {
+                    dt.Columns.Add();
+                    dt.Columns[tmp].ColumnName = tmp < columns.Length ? columns[tmp++] : "Unset Column";
+                }
+            }
+
+            object[] cells = new object[dgv.Columns.Count];
+
+            foreach (DataGridViewRow row in dgv.Rows)
+            {
+                for (int i = 0; i < row.Cells.Count; i++)
+                {
+                    cells[i] = row.Cells[i].Value.ToString().Trim();
+                }
+                dt.Rows.Add(cells);
+            }
+
+            return dt;
         }
     }
 }
